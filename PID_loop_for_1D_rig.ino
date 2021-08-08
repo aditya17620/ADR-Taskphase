@@ -1,4 +1,5 @@
 # include <Wire.h>
+# include <Servo.h>
 
 float gyro_error =0, g_rawX, g_rawY, g_rawerrorX, g_rawerrorY, g_angleX, g_angleY;
 float acc_error =0, a_rawX, a_rawY, a_rawZ, a_rawerrorX, a_rawerrorY, a_angleX, a_angleY;
@@ -9,6 +10,8 @@ float Totaltime, DifferenceTime, Previoustime;
 float errorX, total_errorX, rate_errorX, last_errorX;
 float x_pid, x_pid_p=0, x_pid_i=0, x_pid_d=0;
 float defaultval = 1000, motorR, motorL;
+
+Servo MotorR, MotorL;
 
 void setup()
 {
@@ -86,7 +89,7 @@ void setup()
       // here we calculate the total readings for the 400 itterations, so taht we get a total value
       // to find the average error.
       a_rawerrorX = a_rawerrorX + ((atan((a_rawY)/sqrt(pow(a_rawX,2) + pow(a_rawZ,2)))*rad_deg));
-      a_rawerrorY = a_rawerrorY + ((atan(-1*(a_rawX)/sqrt(pow(a_rawY,2) + pow(a_rawZ, 2)))*rad_deg));
+      a_rawerrorY = a_rawerrorY + ((atan((a_rawX)/sqrt(pow(a_rawY,2) + pow(a_rawZ, 2)))*rad_deg));
 
       // on the last itteration, we calculate the average of the error by dividing it with 400.
       if (i == 399)
@@ -159,7 +162,7 @@ void loop()
   // calculating the angle based on the reading of the rgisters, and then correcting the
   // reading based on the average error calculated from the abover part of the code.
   a_angleX = (atan((a_rawY)/sqrt(pow(a_rawX,2) + pow(a_rawZ,2)))*rad_deg) - a_rawerrorX;
-  a_angleY = (atan(-1*(a_rawX)/sqrt(pow(a_rawY,2) + pow(a_rawZ, 2)))*rad_deg) - a_rawerrorY;
+  a_angleY = (atan((a_rawX)/sqrt(pow(a_rawY,2) + pow(a_rawZ, 2)))*rad_deg) - a_rawerrorY;
 
 //////////////////////////////////////////////////////////////////////////////////////////////////////
 
@@ -208,7 +211,13 @@ void loop()
   rate_errorX = (errorX - last_errorX)/DifferenceTime;
 
   x_pid_p = 1 * errorX;
-  x_pid_i = 1* total_errorX; 
+
+  // to minimize overshoot, and to prevent integral windup the integral controller is
+  // activated only on when the error is between 5 and -5 degrees.
+  if( errorX < 5 && errorX > -5)
+  {
+    x_pid_i = 1* total_errorX; 
+  }
   x_pid_d = 1* rate_errorX;
 
   // calculating the total pid output that will be needed based on the anlge change and desired angle
@@ -252,7 +261,10 @@ void loop()
     motorR = 1000;
   }
 
-  // printint out the motor speed (in microseconds) to the serial monitor for debugging purposes.
+  MotorR.writeMicroseconds(motorR);
+  MotorL.writeMicroseconds(motorL);
+  
+  // printing out the motor speed (in microseconds) to the serial monitor for debugging purposes
   Serial.print("  MotorR: ");
   Serial.print(motorR);
   Serial.print("  MotorL: ");
