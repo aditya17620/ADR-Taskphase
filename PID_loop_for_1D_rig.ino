@@ -17,6 +17,9 @@ void setup()
 {
   Serial.begin(9600);
   Totaltime = millis();
+  // attach the motor to the pin using the attach function from the servo library
+  MotorR.attach(3);
+  MotorL.attach(5);
 
   //using the begin command to initiate communication.
   Wire.begin();
