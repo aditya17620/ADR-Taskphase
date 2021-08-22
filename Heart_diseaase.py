@@ -45,6 +45,7 @@ x = (x_data - np.min(x_data)) / (np.max(x_data) - np.min(x_data)).values
 
 x_train, x_test, y_train, y_test = train_test_split(x,y,test_size=0.2, random_state=0)
 '''
+# the score varies from 0.86885 to 0.8852 based on the number of neighbors 
 knn = KNeighborsClassifier(8)
 knn.fit(x_train, y_train)
 
@@ -52,13 +53,15 @@ y_prediction = knn.predict(x_test)
 score = knn.score(x_test, y_test)
 print(score)
 '''
-
+# SVM gives a score of 0.8852. The better of the two methods.
 svm = SVC(random_state=1)
 svm.fit(x_train,y_train)
 y_prediction = svm.predict(x_test)
 score = svm.score(x_test, y_test)
 print(score)
 
+'''
 plt.plot(y_test, y_prediction, color = 'orange')
 plt.ylim(0)
 plt.show()
+'''
